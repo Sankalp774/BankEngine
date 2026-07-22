@@ -1,72 +1,61 @@
-# BankEngine — High-Concurrency Banking Simulation
+# BankEngine — Concurrent Banking Simulation (Java)
 
-Thread-safe **in-memory banking engine** in Java demonstrating:
+Interview-grade **concurrency / systems** project to balance your AI portfolio.
 
-- Fair `ReentrantLock` per account  
-- **Deadlock-free transfers** via ordered lock acquisition  
-- Concurrent deposits / withdrawals / transfers  
-- Async audit logging  
-- CSV inventory dump on shutdown  
-- JUnit tests for race freedom & balance conservation  
+```text
+ConcurrentHashMap accounts
+  + fair ReentrantLock per account
+  + ordered locking for deadlock-free transfers
+  + async audit log
+  + JUnit race tests
+  + throughput benchmark
+```
 
-## Why this repo
+## Why top candidates ship this too
 
-Systems/concurrency depth for interviews — pairs well with Applied AI projects (shows you can write real concurrent code, not only notebooks).
+AI roles still need engineers who understand:
+
+- shared-memory races  
+- deadlock prevention  
+- testable concurrency  
+
+## Quickstart
+
+```bash
+# requires JDK 17+ and Maven
+mvn -q test
+mvn -q exec:java -Dexec.mainClass=com.bank.Main
+mvn -q exec:java -Dexec.mainClass=com.bank.Benchmark -Dexec.args="16 20000"
+```
+
+## Tests
+
+| Test | Proves |
+|------|--------|
+| `depositIsRaceFreeUnderContention` | 100×10 deposits → exact balance |
+| `transferPreservesTotalBalance` | Concurrent A↔B keeps Σ balances |
+
+## Design
+
+| Problem | Solution |
+|---------|----------|
+| Lost updates | Per-account mutex |
+| Deadlock on transfer | Lock lower account id first |
+| Registry concurrency | `ConcurrentHashMap` |
+| Audit I/O | Single-thread executor |
 
 ## Layout
 
 ```text
 src/main/java/com/bank/
-  Main.java                 # concurrent simulation
+  Main.java
+  Benchmark.java
   model/BankAccount.java
   service/BankEngine.java
   util/AuditLogger.java
-src/test/java/com/bank/service/BankEngineTest.java
-pom.xml
+src/test/java/.../BankEngineTest.java
 ```
 
-## Requirements
+## Author
 
-- JDK 17+  
-- Maven 3.8+  
-
-## Run simulation
-
-```bash
-mvn -q clean compile exec:java
-```
-
-Outputs:
-
-- `system_audit.log` — per-operation audit lines  
-- `inventory.csv` — final balances  
-
-## Tests
-
-```bash
-mvn -q test
-```
-
-Key tests:
-
-- **Race-free deposits** — 100 threads × 10 deposits of $1 → balance $1000  
-- **Transfer conservation** — concurrent A↔B transfers keep total balance constant  
-
-## Design notes
-
-| Concern | Approach |
-|---------|----------|
-| Mutual exclusion | Per-account fair `ReentrantLock` |
-| Deadlocks on transfer | Always lock lower account id first |
-| Shared map | `ConcurrentHashMap` for account registry |
-| Audit I/O | Single-thread executor append log |
-
-## Limitations
-
-- In-memory only (no durable DB transactions)  
-- Not a real bank / no ACID disk durability  
-- Demo-scale; not a production payments core  
-
-## License
-
-MIT / educational use.
+Sankalp Sahu
