@@ -1,59 +1,28 @@
-# BankEngine — Concurrent Banking Simulation (Java)
+# BankEngine — Concurrent Banking Simulation
 
-Interview-grade **concurrency / systems** project to balance your AI portfolio.
+> **Academic stage:** **4th year** systems · **Created:** January 2026  
+> **Learning focus:** Java concurrency · `ReentrantLock` · deadlock prevention · race conditions · JUnit concurrent tests · throughput benchmarking
 
-```text
-ConcurrentHashMap accounts
-  + fair ReentrantLock per account
-  + ordered locking for deadlock-free transfers
-  + async audit log
-  + JUnit race tests
-  + throughput benchmark
-```
+## About
 
-## Why top candidates ship this too
+In-memory banking engine with fair locks, ordered transfer locking, audit log, and tests.
 
-AI roles still need engineers who understand:
+## What I learned
 
-- shared-memory races  
-- deadlock prevention  
-- testable concurrency  
+| Topic | How this project taught it |
+|-------|----------------------------|
+| Concurrency | Threads, shared state, mutual exclusion |
+| Deadlocks | Ordered lock acquisition on transfers |
+| Testing races | Multi-thread deposit / transfer tests |
+| Performance | Ops/sec micro-benchmark |
+| Systems hygiene | Audit logging, graceful dump |
 
 ## Quickstart
 
 ```bash
-# requires JDK 17+ and Maven
 mvn -q test
 mvn -q exec:java -Dexec.mainClass=com.bank.Main
 mvn -q exec:java -Dexec.mainClass=com.bank.Benchmark -Dexec.args="16 20000"
-```
-
-## Tests
-
-| Test | Proves |
-|------|--------|
-| `depositIsRaceFreeUnderContention` | 100×10 deposits → exact balance |
-| `transferPreservesTotalBalance` | Concurrent A↔B keeps Σ balances |
-
-## Design
-
-| Problem | Solution |
-|---------|----------|
-| Lost updates | Per-account mutex |
-| Deadlock on transfer | Lock lower account id first |
-| Registry concurrency | `ConcurrentHashMap` |
-| Audit I/O | Single-thread executor |
-
-## Layout
-
-```text
-src/main/java/com/bank/
-  Main.java
-  Benchmark.java
-  model/BankAccount.java
-  service/BankEngine.java
-  util/AuditLogger.java
-src/test/java/.../BankEngineTest.java
 ```
 
 ## Author
