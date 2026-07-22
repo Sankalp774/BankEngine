@@ -1,92 +1,72 @@
-# High-Concurrency Enterprise Banking Engine
+# BankEngine — High-Concurrency Banking Simulation
 
-![Java](https://img.shields.io/badge/Java-21%2B-orange)
-![Build](https://img.shields.io/badge/Build-Maven-blue)
-![License](https://img.shields.io/badge/License-MIT-green)
-![Status](https://img.shields.io/badge/Status-Completed-brightgreen)
+Thread-safe **in-memory banking engine** in Java demonstrating:
 
-## 📌 Project Overview
-This project is a thread-safe, modular **Banking Simulation Engine** built in Java SE. It is designed to simulate a high-volume transactional environment where multiple threads access shared resources (bank accounts) simultaneously.
+- Fair `ReentrantLock` per account  
+- **Deadlock-free transfers** via ordered lock acquisition  
+- Concurrent deposits / withdrawals / transfers  
+- Async audit logging  
+- CSV inventory dump on shutdown  
+- JUnit tests for race freedom & balance conservation  
 
-The core objective was to demonstrate **concurrency control**, **deadlock prevention**, and **atomic operations** without relying on database-level locking, implementing these concepts purely in memory using the `java.util.concurrent` package.
+## Why this repo
 
-## 🚀 Key Features
+Systems/concurrency depth for interviews — pairs well with Applied AI projects (shows you can write real concurrent code, not only notebooks).
 
-### 1. Advanced Concurrency Control
-* **ReentrantLock Implementation:** Replaces standard `synchronized` blocks to offer advanced locking mechanisms.
-* **Fairness Policy:** The engine uses `new ReentrantLock(true)` to ensure First-In-First-Out (FIFO) access to threads, preventing **thread starvation** during high traffic.
-* **Atomic Transactions:** Transactions (Deposit, Withdraw, Transfer) are atomic; either the entire operation succeeds, or it fails safely without data corruption.
+## Layout
 
-### 2. Deadlock Prevention Strategy
-* **Resource Ordering:** Implements a "Dining Philosophers" solution for transfers. When moving funds between Account A and Account B, the system enforces a strict locking order based on Account IDs. This mathematically guarantees that a circular wait (Deadlock) cannot occur.
-
-### 3. System Engineering Add-ons
-* **Audit Logging:** Asynchronous logging of every transaction (Success/Fail) with timestamps and executing Thread IDs to `system_audit.log`.
-* **State Persistence:** Simulates a "database dump" by serializing the in-memory state of all accounts to a CSV file (`inventory.csv`) upon system shutdown.
-* **Graceful Shutdown:** Uses `ExecutorService` lifecycle management to ensure all active transactions complete before the application closes.
-
-## 🛠 Tech Stack
-* **Language:** Java 17+
-* **Build Tool:** Maven
-* **Testing:** JUnit 5 (Jupiter)
-* **Concurrency:** `java.util.concurrent` (Executors, ReentrantLock, ConcurrentHashMap)
-
-## 📂 Project Structure
 ```text
-src/main/java/com/bank
-├── model
-│   └── BankAccount.java       // POJO with embedded ReentrantLock
-├── service
-│   └── BankEngine.java        // Business logic & Deadlock prevention
-├── util
-│   └── AuditLogger.java       // File I/O for audit logs
-└── Main.java                  // Simulation Entry Point
+src/main/java/com/bank/
+  Main.java                 # concurrent simulation
+  model/BankAccount.java
+  service/BankEngine.java
+  util/AuditLogger.java
+src/test/java/com/bank/service/BankEngineTest.java
+pom.xml
+```
 
-⚙️ How to Run
-Prerequisites
-Java JDK 17 or higher
+## Requirements
 
-Maven 3.x
+- JDK 17+  
+- Maven 3.8+  
 
-Running the Simulation
-Clone the repository:
+## Run simulation
 
-Bash
-git clone [https://github.com/YOUR_USERNAME/BankEngine.git](https://github.com/YOUR_USERNAME/BankEngine.git)
-Navigate to the project directory:
+```bash
+mvn -q clean compile exec:java
+```
 
-Bash
-cd BankEngine
-Run the application using your IDE (IntelliJ/Eclipse) or Maven:
+Outputs:
 
-Bash
-mvn clean compile exec:java -Dexec.mainClass="com.bank.Main"
-Expected Output: The console will show the shutdown sequence, and two files will be generated in the root directory:
+- `system_audit.log` — per-operation audit lines  
+- `inventory.csv` — final balances  
 
-inventory.csv: The final balance of all accounts.
+## Tests
 
-system_audit.log: A history of every thread operation.
+```bash
+mvn -q test
+```
 
-🧪 Testing
-The project includes a JUnit 5 test suite to verify thread safety and race conditions.
+Key tests:
 
-To run the tests:
+- **Race-free deposits** — 100 threads × 10 deposits of $1 → balance $1000  
+- **Transfer conservation** — concurrent A↔B transfers keep total balance constant  
 
-Bash
-mvn test
-Key Tests:
+## Design notes
 
-testRaceConditionOnDeposit: Spawns 1,000 threads to deposit $1.00 into a single account. Verifies that the final balance is exactly $1,000.00 (proving no "lost updates").
+| Concern | Approach |
+|---------|----------|
+| Mutual exclusion | Per-account fair `ReentrantLock` |
+| Deadlocks on transfer | Always lock lower account id first |
+| Shared map | `ConcurrentHashMap` for account registry |
+| Audit I/O | Single-thread executor append log |
 
-testDeadlockFreedom: Forces high-frequency cross-transfers (A->B and B->A) to ensure the locking strategy prevents the system from freezing.
+## Limitations
 
-📄 License
-This project is licensed under the MIT License - see the LICENSE file for details.
+- In-memory only (no durable DB transactions)  
+- Not a real bank / no ACID disk durability  
+- Demo-scale; not a production payments core  
 
+## License
 
----
-
-### **One Final Detail (The License)**
-To make that "License" badge in the README valid, you should add a standard license file.
-
-**Next Step:** Would you like me to generate the text for a standard **MIT License** file so you can add that to your repo as well?
+MIT / educational use.
