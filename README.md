@@ -1,7 +1,7 @@
 # BankEngine — Concurrent Banking Simulation
 
-> **Academic stage:** **4th year** systems · **Created:** January 2026  
-> **Learning focus:** Java concurrency · `ReentrantLock` · deadlock prevention · race conditions · JUnit concurrent tests · throughput benchmarking
+> **Created:** (2026-01-29)  
+> **Latest update:** (2026-07-22) — Real concurrency banking engine + race tests + throughput benchmark
 
 ## About
 
