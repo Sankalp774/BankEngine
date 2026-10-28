@@ -7,3 +7,8 @@ target/
 system_audit.log
 inventory.csv
 .DS_Store
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
